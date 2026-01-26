@@ -7,7 +7,7 @@ import { Organization, OrgType } from '@prisma/client';
 export class OrganizationRepository {
   constructor(private prisma: PrismaService) {}
 
-  create(data: { org_did: string; org_name: string; org_type?: OrgType }) {
+  create(data: { org_did: string; org_name: string; org_type: OrgType }) {
     return this.prisma.organization.create({ data });
   }
 

@@ -22,6 +22,13 @@ enum BillingModel {
   PAY_PER_USE
 }
 
+enum PlanCode {
+  BASIC
+  PLUS
+  PREMIUM
+  ELITE
+}
+
 enum SubscriptionStatus {
   ACTIVE
   TRIALING
@@ -53,7 +60,7 @@ enum PaymentStatus {
  */
 
 model Organization {
-  org_id     BigInt   @id @default(autoincrement())
+  org_id     Int   @id @default(autoincrement())
   org_did    String   @unique
   org_name   String
   org_type   OrgType
@@ -69,7 +76,7 @@ model Organization {
 }
 
 model Service {
-  service_id               BigInt  @id @default(autoincrement())
+  service_id               Int  @id @default(autoincrement())
   service_name             String
   org_type_eligible Boolean @default(false)
 
@@ -84,8 +91,8 @@ model Service {
 }
 
 model Plan {
-  plan_id        BigInt       @id @default(autoincrement())
-  service_id     BigInt
+  plan_id        Int       @id @default(autoincrement())
+  service_id     Int
   plan_code      String // BASIC/PLUS/PREMIUM/PAYG
   billing_period String // MONTHLY/YEARLY (or make enum later)
   billing_model  BillingModel
@@ -112,8 +119,8 @@ model Plan {
  */
 
 model PlanPrice {
-  plan_price_id BigInt   @id @default(autoincrement())
-  plan_id       BigInt
+  plan_price_id Int   @id @default(autoincrement())
+  plan_id       Int
   org_type      OrgType? // NULL = default rate
   currency      String   @default("BTN")
   fixed_fee     Decimal  @db.Decimal(12, 2)
@@ -132,12 +139,11 @@ model PlanPrice {
 }
 
 model PlanEntitlement {
-  entitlement_id BigInt   @id @default(autoincrement())
-  plan_id        BigInt
+  entitlement_id Int   @id @default(autoincrement())
+  plan_id        Int
   org_type       OrgType? // NULL = default
-  metric         String? // sessions, otp_sent, etc.
 
-  included_quantity  BigInt
+  included_quantity  Int
   overage_unit_price Decimal? @db.Decimal(12, 4)
   hard_limit         Boolean  @default(false)
   period             String // PER_BILLING_CYCLE (or similar)
@@ -150,16 +156,14 @@ model PlanEntitlement {
 
   plan Plan @relation(fields: [plan_id], references: [plan_id])
 
-  @@index([plan_id, metric])
-  @@index([plan_id, metric, org_type])
+  @@index([plan_id])
+  @@index([plan_id, org_type])
   @@map("plan_entitlements")
 }
 
 model PlanUsageRate {
-  rate_id    BigInt   @id @default(autoincrement())
-  plan_id    BigInt
-  org_type   OrgType? // NULL = default
-  metric     String?
+  rate_id    Int   @id @default(autoincrement())
+  plan_id    Int
   unit_price Decimal  @db.Decimal(12, 4)
 
   effective_from DateTime
@@ -170,8 +174,7 @@ model PlanUsageRate {
 
   plan Plan @relation(fields: [plan_id], references: [plan_id])
 
-  @@index([plan_id, metric])
-  @@index([plan_id, metric, org_type])
+  @@index([plan_id])
   @@map("plan_usage_rates")
 }
 
@@ -180,11 +183,11 @@ model PlanUsageRate {
  */
 
 model Subscription {
-  subscription_id BigInt @id @default(autoincrement())
+  subscription_id Int @id @default(autoincrement())
 
-  org_id     BigInt
-  service_id BigInt
-  plan_id    BigInt
+  org_id     Int
+  service_id Int
+  plan_id    Int
 
   status SubscriptionStatus
 
@@ -211,15 +214,14 @@ model Subscription {
 }
 
 model UsageEvent {
-  usage_id    BigInt   @id @default(autoincrement())
+  usage_id    Int   @id @default(autoincrement())
   occurred_at DateTime @default(now())
 
-  org_id          BigInt
-  service_id      BigInt
-  subscription_id BigInt
-  plan_id         BigInt
+  org_id          Int
+  service_id      Int
+  subscription_id Int
+  plan_id         Int
 
-  metric String?
   result UsageResult
 
   external_ref String @unique // idempotency
@@ -232,7 +234,7 @@ model UsageEvent {
   subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
   plan         Plan         @relation(fields: [plan_id], references: [plan_id])
 
-  @@index([subscription_id, metric, occurred_at])
+  @@index([subscription_id,occurred_at])
   @@index([org_id, service_id, occurred_at])
   @@map("usage_events")
 }
@@ -242,9 +244,9 @@ model UsageEvent {
  */
 
 model Invoice {
-  invoice_id BigInt @id @default(autoincrement())
+  invoice_id Int @id @default(autoincrement())
 
-  org_id       BigInt
+  org_id       Int
   period_start DateTime
   period_end   DateTime
 
@@ -271,11 +273,10 @@ model Invoice {
 }
 
 model InvoiceLine {
-  line_id    BigInt @id @default(autoincrement())
-  invoice_id BigInt
+  line_id    Int @id @default(autoincrement())
+  invoice_id Int
 
   description String
-  metric      String?
   quantity    Decimal? @db.Decimal(18, 4)
   unit_price  Decimal? @db.Decimal(12, 4)
   amount      Decimal  @db.Decimal(12, 2)
@@ -289,10 +290,10 @@ model InvoiceLine {
 }
 
 model Transaction {
-  transaction_id BigInt @id @default(autoincrement())
+  transaction_id Int @id @default(autoincrement())
 
-  invoice_id BigInt?
-  org_id     BigInt
+  invoice_id Int?
+  org_id     Int
 
   amount   Decimal @db.Decimal(12, 2)
   currency String  @default("BTN")

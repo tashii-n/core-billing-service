@@ -5,6 +5,9 @@ CREATE TYPE "OrgType" AS ENUM ('SMALL', 'MEDIUM', 'LARGE', 'OTHER');
 CREATE TYPE "BillingModel" AS ENUM ('SUBSCRIPTION', 'PAY_PER_USE');
 
 -- CreateEnum
+CREATE TYPE "PlanCode" AS ENUM ('BASIC', 'PLUS', 'PREMIUM', 'ELITE');
+
+-- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'TRIALING', 'CANCELED', 'EXPIRED');
 
 -- CreateEnum
@@ -18,7 +21,7 @@ CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 
 -- CreateTable
 CREATE TABLE "organizations" (
-    "org_id" BIGSERIAL NOT NULL,
+    "org_id" SERIAL NOT NULL,
     "org_did" TEXT NOT NULL,
     "org_name" TEXT NOT NULL,
     "org_type" "OrgType" NOT NULL,
@@ -30,10 +33,9 @@ CREATE TABLE "organizations" (
 
 -- CreateTable
 CREATE TABLE "services" (
-    "service_id" BIGSERIAL NOT NULL,
-    "service_code" TEXT NOT NULL,
+    "service_id" SERIAL NOT NULL,
     "service_name" TEXT NOT NULL,
-    "org_type_pricing_enabled" BOOLEAN NOT NULL DEFAULT false,
+    "org_type_eligible" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -42,8 +44,8 @@ CREATE TABLE "services" (
 
 -- CreateTable
 CREATE TABLE "plans" (
-    "plan_id" BIGSERIAL NOT NULL,
-    "service_id" BIGINT NOT NULL,
+    "plan_id" SERIAL NOT NULL,
+    "service_id" INTEGER NOT NULL,
     "plan_code" TEXT NOT NULL,
     "billing_period" TEXT NOT NULL,
     "billing_model" "BillingModel" NOT NULL,
@@ -56,8 +58,8 @@ CREATE TABLE "plans" (
 
 -- CreateTable
 CREATE TABLE "plan_prices" (
-    "plan_price_id" BIGSERIAL NOT NULL,
-    "plan_id" BIGINT NOT NULL,
+    "plan_price_id" SERIAL NOT NULL,
+    "plan_id" INTEGER NOT NULL,
     "org_type" "OrgType",
     "currency" TEXT NOT NULL DEFAULT 'BTN',
     "fixed_fee" DECIMAL(12,2) NOT NULL,
@@ -71,11 +73,10 @@ CREATE TABLE "plan_prices" (
 
 -- CreateTable
 CREATE TABLE "plan_entitlements" (
-    "entitlement_id" BIGSERIAL NOT NULL,
-    "plan_id" BIGINT NOT NULL,
+    "entitlement_id" SERIAL NOT NULL,
+    "plan_id" INTEGER NOT NULL,
     "org_type" "OrgType",
-    "metric" TEXT NOT NULL,
-    "included_quantity" BIGINT NOT NULL,
+    "included_quantity" INTEGER NOT NULL,
     "overage_unit_price" DECIMAL(12,4),
     "hard_limit" BOOLEAN NOT NULL DEFAULT false,
     "period" TEXT NOT NULL,
@@ -89,10 +90,8 @@ CREATE TABLE "plan_entitlements" (
 
 -- CreateTable
 CREATE TABLE "plan_usage_rates" (
-    "rate_id" BIGSERIAL NOT NULL,
-    "plan_id" BIGINT NOT NULL,
-    "org_type" "OrgType",
-    "metric" TEXT NOT NULL,
+    "rate_id" SERIAL NOT NULL,
+    "plan_id" INTEGER NOT NULL,
     "unit_price" DECIMAL(12,4) NOT NULL,
     "effective_from" TIMESTAMP(3) NOT NULL,
     "effective_to" TIMESTAMP(3),
@@ -104,10 +103,10 @@ CREATE TABLE "plan_usage_rates" (
 
 -- CreateTable
 CREATE TABLE "subscriptions" (
-    "subscription_id" BIGSERIAL NOT NULL,
-    "org_id" BIGINT NOT NULL,
-    "service_id" BIGINT NOT NULL,
-    "plan_id" BIGINT NOT NULL,
+    "subscription_id" SERIAL NOT NULL,
+    "org_id" INTEGER NOT NULL,
+    "service_id" INTEGER NOT NULL,
+    "plan_id" INTEGER NOT NULL,
     "status" "SubscriptionStatus" NOT NULL,
     "start_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "end_date" TIMESTAMP(3),
@@ -122,13 +121,12 @@ CREATE TABLE "subscriptions" (
 
 -- CreateTable
 CREATE TABLE "usage_events" (
-    "usage_id" BIGSERIAL NOT NULL,
+    "usage_id" SERIAL NOT NULL,
     "occurred_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "org_id" BIGINT NOT NULL,
-    "service_id" BIGINT NOT NULL,
-    "subscription_id" BIGINT NOT NULL,
-    "plan_id" BIGINT NOT NULL,
-    "metric" TEXT NOT NULL,
+    "org_id" INTEGER NOT NULL,
+    "service_id" INTEGER NOT NULL,
+    "subscription_id" INTEGER NOT NULL,
+    "plan_id" INTEGER NOT NULL,
     "result" "UsageResult" NOT NULL,
     "external_ref" TEXT NOT NULL,
     "metadata" JSONB,
@@ -139,8 +137,8 @@ CREATE TABLE "usage_events" (
 
 -- CreateTable
 CREATE TABLE "invoices" (
-    "invoice_id" BIGSERIAL NOT NULL,
-    "org_id" BIGINT NOT NULL,
+    "invoice_id" SERIAL NOT NULL,
+    "org_id" INTEGER NOT NULL,
     "period_start" TIMESTAMP(3) NOT NULL,
     "period_end" TIMESTAMP(3) NOT NULL,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'DRAFT',
@@ -158,10 +156,9 @@ CREATE TABLE "invoices" (
 
 -- CreateTable
 CREATE TABLE "invoice_lines" (
-    "line_id" BIGSERIAL NOT NULL,
-    "invoice_id" BIGINT NOT NULL,
+    "line_id" SERIAL NOT NULL,
+    "invoice_id" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
-    "metric" TEXT,
     "quantity" DECIMAL(18,4),
     "unit_price" DECIMAL(12,4),
     "amount" DECIMAL(12,2) NOT NULL,
@@ -172,9 +169,9 @@ CREATE TABLE "invoice_lines" (
 
 -- CreateTable
 CREATE TABLE "transactions" (
-    "transaction_id" BIGSERIAL NOT NULL,
-    "invoice_id" BIGINT,
-    "org_id" BIGINT NOT NULL,
+    "transaction_id" SERIAL NOT NULL,
+    "invoice_id" INTEGER,
+    "org_id" INTEGER NOT NULL,
     "amount" DECIMAL(12,2) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'BTN',
     "payment_status" "PaymentStatus" NOT NULL,
@@ -189,9 +186,6 @@ CREATE TABLE "transactions" (
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "services_service_code_key" ON "services"("service_code");
-
--- CreateIndex
 CREATE INDEX "plans_service_id_idx" ON "plans"("service_id");
 
 -- CreateIndex
@@ -204,16 +198,13 @@ CREATE INDEX "plan_prices_plan_id_idx" ON "plan_prices"("plan_id");
 CREATE INDEX "plan_prices_plan_id_org_type_idx" ON "plan_prices"("plan_id", "org_type");
 
 -- CreateIndex
-CREATE INDEX "plan_entitlements_plan_id_metric_idx" ON "plan_entitlements"("plan_id", "metric");
+CREATE INDEX "plan_entitlements_plan_id_idx" ON "plan_entitlements"("plan_id");
 
 -- CreateIndex
-CREATE INDEX "plan_entitlements_plan_id_metric_org_type_idx" ON "plan_entitlements"("plan_id", "metric", "org_type");
+CREATE INDEX "plan_entitlements_plan_id_org_type_idx" ON "plan_entitlements"("plan_id", "org_type");
 
 -- CreateIndex
-CREATE INDEX "plan_usage_rates_plan_id_metric_idx" ON "plan_usage_rates"("plan_id", "metric");
-
--- CreateIndex
-CREATE INDEX "plan_usage_rates_plan_id_metric_org_type_idx" ON "plan_usage_rates"("plan_id", "metric", "org_type");
+CREATE INDEX "plan_usage_rates_plan_id_idx" ON "plan_usage_rates"("plan_id");
 
 -- CreateIndex
 CREATE INDEX "subscriptions_org_id_service_id_status_idx" ON "subscriptions"("org_id", "service_id", "status");
@@ -225,7 +216,7 @@ CREATE INDEX "subscriptions_plan_id_idx" ON "subscriptions"("plan_id");
 CREATE UNIQUE INDEX "usage_events_external_ref_key" ON "usage_events"("external_ref");
 
 -- CreateIndex
-CREATE INDEX "usage_events_subscription_id_metric_occurred_at_idx" ON "usage_events"("subscription_id", "metric", "occurred_at");
+CREATE INDEX "usage_events_subscription_id_occurred_at_idx" ON "usage_events"("subscription_id", "occurred_at");
 
 -- CreateIndex
 CREATE INDEX "usage_events_org_id_service_id_occurred_at_idx" ON "usage_events"("org_id", "service_id", "occurred_at");

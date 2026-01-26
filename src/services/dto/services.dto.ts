@@ -6,7 +6,7 @@ export class CreateServiceDto {
   @ApiProperty({ example: 'Mobile verifier ' })
   @IsNotEmpty()
   @IsString()
-  services_name: string;
+  service_name: string;
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()
@@ -18,7 +18,7 @@ export class UpdateServiceDto {
   @ApiPropertyOptional({ example: 'Updated NDI Service' })
   @IsOptional()
   @IsString()
-  services_name?: string;
+  service_name?: string;
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()

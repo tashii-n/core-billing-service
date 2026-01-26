@@ -11,7 +11,11 @@ export class OrganizationService {
   constructor(private readonly repository: OrganizationRepository) {}
 
   async create(dto: CreateOrganizationDto) {
-    return this.repository.create(dto);
+    const { org_did, org_name, org_type } = dto;
+    if (!org_type) {
+      throw new Error('org_type is required');
+    }
+    return this.repository.create({ org_did, org_name, org_type });
   }
 
   async update(org_id: number, dto: UpdateOrganizationDto) {

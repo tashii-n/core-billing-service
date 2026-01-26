@@ -1,45 +1,45 @@
 // services.repository.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Services } from '@prisma/client';
+import { Service } from '@prisma/client';
 
 @Injectable()
 export class ServicesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(data: {
-    services_name: string;
+    service_name: string;
     org_type_eligible?: boolean;
-  }): Promise<Services> {
-    return this.prisma.services.create({ data });
+  }): Promise<Service> {
+    return this.prisma.service.create({ data });
   }
 
-  findAll(): Promise<Services[]> {
-    return this.prisma.services.findMany();
+  findAll(): Promise<Service[]> {
+    return this.prisma.service.findMany();
   }
 
-  findOne(services_id: number): Promise<Services | null> {
-    return this.prisma.services.findUnique({
-      where: { services_id },
+  findOne(service_id: number): Promise<Service | null> {
+    return this.prisma.service.findUnique({
+      where: { service_id },
     });
   }
 
   update(
-    services_id: number,
+    service_id: number,
     data: {
-      services_name?: string;
+      service_name?: string;
       org_type_eligible?: boolean;
     },
-  ): Promise<Services> {
-    return this.prisma.services.update({
-      where: { services_id },
+  ): Promise<Service> {
+    return this.prisma.service.update({
+      where: { service_id },
       data,
     });
   }
 
-  delete(services_id: number): Promise<Services> {
-    return this.prisma.services.delete({
-      where: { services_id },
+  delete(service_id: number): Promise<Service> {
+    return this.prisma.service.delete({
+      where: { service_id },
     });
   }
 }

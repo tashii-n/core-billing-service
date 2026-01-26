@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { config } from '@config/config';
 import { validationSchema } from '@config/validation';
 import { ServicesModule } from './services/services.module';
+import { PlansModule } from './plans/plans.module';
+import { PlanPricesModule } from './planPrices/plan_prices.modules';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { ServicesModule } from './services/services.module';
     AuthModule,
     OrganizationModule,
     ServicesModule,
+    PlansModule,
+    PlanPricesModule,
   ],
 })
 export class AppModule {}
