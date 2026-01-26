@@ -5,6 +5,7 @@ import { OrganizationModule } from './organization/organization.module';
 import { AuthModule } from './auth/auth.module';
 import { config } from '@config/config';
 import { validationSchema } from '@config/validation';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { validationSchema } from '@config/validation';
     }),
     AuthModule,
     OrganizationModule,
+    ServicesModule,
   ],
 })
 export class AppModule {}

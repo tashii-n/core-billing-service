@@ -9,31 +9,33 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { OrganizationService } from './organization.service';
 import {
-  CreateOrganizationDto,
-  UpdateOrganizationDto,
-} from './dto/organization.dto';
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { ServicesService } from './services.service';
+import { CreateServiceDto, UpdateServiceDto } from './dto/services.dto';
 import { AuthGuard } from '@nestjs/passport';
 
-@ApiTags('ORGANIZATIONS')
+@ApiTags('SERVICES')
 @ApiBearerAuth()
-@Controller('organizations')
-export class OrganizationController {
-  constructor(private readonly service: OrganizationService) {}
+@Controller('services')
+export class ServicesController {
+  constructor(private readonly service: ServicesService) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 201,
-    description: 'organization record created successfully.',
+    description: 'service record created successfully.',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized.',
   })
-  create(@Body() dto: CreateOrganizationDto) {
+  create(@Body() dto: CreateServiceDto) {
     return this.service.create(dto);
   }
 
@@ -41,16 +43,13 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'update organization record created successfully.',
+    description: 'update service record created successfully.',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized.',
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateOrganizationDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateServiceDto) {
     return this.service.update(id, dto);
   }
 
@@ -58,7 +57,7 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'organization record retrieved successfully.',
+    description: 'service record retrieved successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -72,7 +71,7 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'organization record retrieved successfully.',
+    description: 'service record retrieved successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -86,12 +85,13 @@ export class OrganizationController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'organization record delete successfully.',
+    description: 'service record delete successfully.',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized.',
   })
+  @ApiOperation({ summary: 'Delete service by ID' })
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.service.delete(id);
   }
