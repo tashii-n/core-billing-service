@@ -8,12 +8,7 @@ import {
   Put,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { PlansService } from './plans.service';
 import { CreatePlanDto, UpdatePlanDto } from './dto/plans.dto';
@@ -26,33 +21,71 @@ export class PlansController {
   constructor(private readonly service: PlansService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a plan' })
-  @ApiResponse({ status: 201, description: 'Plan created successfully' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 201,
+    description: 'plan record created successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   create(@Body() dto: CreatePlanDto) {
     return this.service.create(dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all plans' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'plan record retrieved successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get plan by ID' })
-  @ApiResponse({ status: 404, description: 'Plan not found' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'plan record retrieved successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   findOne(@Param('id') id: string) {
     return this.service.findOne(Number(id));
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update plan by ID' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'update plan record created successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   update(@Param('id') id: string, @Body() dto: UpdatePlanDto) {
     return this.service.update(Number(id), dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete plan by ID' })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'plan record delete successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   delete(@Param('id') id: string) {
     return this.service.delete(Number(id));
   }

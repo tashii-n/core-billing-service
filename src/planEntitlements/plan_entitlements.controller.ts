@@ -11,25 +11,28 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { PlanPricesService } from './plan_prices.service';
-import { CreatePlanPriceDto, UpdatePlanPriceDto } from './dto/plan_prices.dto';
+import { PlanEntitlementsService } from './plan_entitlements.service';
+import {
+  CreatePlanEntitlementDto,
+  UpdatePlanEntitlementDto,
+} from './dto/plan_entitlements.dto';
 
-@ApiTags('PLAN_PRICES')
+@ApiTags('PLAN_ENTITLEMENTS')
 @ApiBearerAuth()
-@Controller('plan-prices')
-export class PlanPricesController {
-  constructor(private readonly service: PlanPricesService) {}
+@Controller('plan-entitlements')
+export class PlanEntitlementsController {
+  constructor(private readonly service: PlanEntitlementsService) {}
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 201,
-    description: 'plan prices record created successfully.',
+    description: 'plan entitlements record created successfully.',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized.',
   })
-  create(@Body() dto: CreatePlanPriceDto) {
+  create(@Body() dto: CreatePlanEntitlementDto) {
     return this.service.create(dto);
   }
 
@@ -37,21 +40,7 @@ export class PlanPricesController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'plan prices record retrieved successfully.',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized.',
-  })
-  findAll() {
-    return this.service.findAll();
-  }
-
-  @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiResponse({
-    status: 200,
-    description: 'plan prices record retrieved successfully.',
+    description: 'plan entitlements record retrieved successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -65,7 +54,7 @@ export class PlanPricesController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'update plan prices record created successfully.',
+    description: 'update plan entitlements record created successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -73,7 +62,7 @@ export class PlanPricesController {
   })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdatePlanPriceDto,
+    @Body() dto: UpdatePlanEntitlementDto,
   ) {
     return this.service.update(id, dto);
   }

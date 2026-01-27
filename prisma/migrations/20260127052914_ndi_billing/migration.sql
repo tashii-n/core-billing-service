@@ -8,7 +8,7 @@ CREATE TYPE "BillingModel" AS ENUM ('SUBSCRIPTION', 'PAY_PER_USE');
 CREATE TYPE "PlanCode" AS ENUM ('BASIC', 'PLUS', 'PREMIUM', 'ELITE');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'TRIALING', 'CANCELED', 'EXPIRED');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'CANCELED', 'EXPIRED');
 
 -- CreateEnum
 CREATE TYPE "UsageResult" AS ENUM ('SUCCESS', 'FAILED');

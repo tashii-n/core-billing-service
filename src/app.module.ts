@@ -8,6 +8,9 @@ import { validationSchema } from '@config/validation';
 import { ServicesModule } from './services/services.module';
 import { PlansModule } from './plans/plans.module';
 import { PlanPricesModule } from './planPrices/plan_prices.modules';
+import { PlanEntitlementsModule } from './planEntitlements/plan_entitlements.module';
+import { PlanUsageRateModule } from './planUsageRate/plan_usage_rate.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { PlanPricesModule } from './planPrices/plan_prices.modules';
     ServicesModule,
     PlansModule,
     PlanPricesModule,
+    PlanEntitlementsModule,
+    PlanUsageRateModule,
+    SubscriptionsModule,
   ],
 })
 export class AppModule {}

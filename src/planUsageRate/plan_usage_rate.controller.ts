@@ -11,33 +11,54 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { PlanPricesService } from './plan_prices.service';
-import { CreatePlanPriceDto, UpdatePlanPriceDto } from './dto/plan_prices.dto';
+import { PlanUsageRateService } from './plan_usage_rate.service';
+import {
+  CreatePlanUsageRateDto,
+  UpdatePlanUsageRateDto,
+} from './dto/plan_usage_rate.dto';
 
-@ApiTags('PLAN_PRICES')
+@ApiTags('PLAN_USAGE_RATES')
 @ApiBearerAuth()
-@Controller('plan-prices')
-export class PlanPricesController {
-  constructor(private readonly service: PlanPricesService) {}
+@Controller('plan-usage-rates')
+export class PlanUsageRateController {
+  constructor(private readonly service: PlanUsageRateService) {}
+
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 201,
-    description: 'plan prices record created successfully.',
+    description: 'plan usage rate record created successfully.',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized.',
   })
-  create(@Body() dto: CreatePlanPriceDto) {
+  create(@Body() dto: CreatePlanUsageRateDto) {
     return this.service.create(dto);
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'plan usage rate record updated successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdatePlanUsageRateDto,
+  ) {
+    return this.service.update(id, dto);
   }
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'plan prices record retrieved successfully.',
+    description: 'plan usage rate records retrieved successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -51,7 +72,7 @@ export class PlanPricesController {
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'plan prices record retrieved successfully.',
+    description: 'plan usage rate record retrieved successfully.',
   })
   @ApiResponse({
     status: 401,
@@ -61,28 +82,11 @@ export class PlanPricesController {
     return this.service.findOne(id);
   }
 
-  @Put(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiResponse({
-    status: 200,
-    description: 'update plan prices record created successfully.',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized.',
-  })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdatePlanPriceDto,
-  ) {
-    return this.service.update(id, dto);
-  }
-
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiResponse({
     status: 200,
-    description: 'plan prices record deleted successfully.',
+    description: 'plan usage rate record deleted successfully.',
   })
   @ApiResponse({
     status: 401,
