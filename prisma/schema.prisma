@@ -206,6 +206,7 @@ model Subscription {
   plan         Plan         @relation(fields: [plan_id], references: [plan_id])
 
   usage_events UsageEvent[]
+  usage_counters UsageCounter[]
 
   @@index([org_id, service_id, status])
   @@index([plan_id])
@@ -309,4 +310,23 @@ model Transaction {
   @@index([org_id, transaction_date])
   @@index([invoice_id])
   @@map("transactions")
+}
+
+
+model UsageCounter {
+  subscription_id Int
+  metric          String
+  period_start    DateTime
+  period_end      DateTime
+
+  success_count   BigInt @default(0)
+  fail_count      BigInt @default(0)
+
+  updated_at      DateTime @updatedAt
+
+  subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
+
+  @@id([subscription_id, metric, period_start, period_end])
+  @@index([subscription_id, period_start, period_end])
+  @@map("usage_counters")
 }
