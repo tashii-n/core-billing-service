@@ -33,6 +33,7 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELED
   EXPIRED
+  EXCEEDED_LIMIT
 }
 
 enum UsageResult {
@@ -315,18 +316,16 @@ model Transaction {
 
 model UsageCounter {
   subscription_id Int
-  metric          String
   period_start    DateTime
   period_end      DateTime
 
-  success_count   BigInt @default(0)
-  fail_count      BigInt @default(0)
+  count   Int @default(0)
 
   updated_at      DateTime @updatedAt
 
   subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
 
-  @@id([subscription_id, metric, period_start, period_end])
+  @@id([subscription_id, period_start, period_end])
   @@index([subscription_id, period_start, period_end])
   @@map("usage_counters")
 }

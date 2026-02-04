@@ -11,6 +11,8 @@ import { PlanPricesModule } from './planPrices/plan_prices.modules';
 import { PlanEntitlementsModule } from './planEntitlements/plan_entitlements.module';
 import { PlanUsageRateModule } from './planUsageRate/plan_usage_rate.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { UsageModule } from './usage/usage.module';
+import { PrismaModule } from 'prisma/prisma.module';
 
 @Module({
   imports: [
@@ -27,7 +29,9 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module';
     PlanPricesModule,
     PlanEntitlementsModule,
     PlanUsageRateModule,
+    PrismaModule,
     SubscriptionsModule,
+    UsageModule
   ],
 })
 export class AppModule {}
