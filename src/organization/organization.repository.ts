@@ -9,25 +9,24 @@ export class OrganizationRepository {
 
   create(data: {
     org_did: string;
-    orgId: string;
-    client_id: string;
-    role: string;
-    redirect_url: string;
+    client_id?: string;
+    role?: string;
+    redirect_url?: string;
     org_name: string;
     org_type: OrgType;
   }) {
-    return this.prisma.organization.create({ data });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return this.prisma.organization.create({ data } as any);
   }
 
   update(
-    org_id: number,
+    org_id: string,
     data: {
       org_name?: string;
-      client_id: string;
-      role: string;
-      redirect_url: string;
+      client_id?: string;
+      role?: string;
+      redirect_url?: string;
       org_type?: OrgType;
-      orgId?: string;
     },
   ) {
     return this.prisma.organization.update({
@@ -40,19 +39,17 @@ export class OrganizationRepository {
     return this.prisma.organization.findMany();
   }
 
-  findOne(org_id: number): Promise<Organization | null> {
-    return this.prisma.organization.findUnique({ where: { org_id } });
+  findOne(org_id: string): Promise<Organization | null> {
+    return this.prisma.organization.findUnique({
+      where: { org_id },
+    });
   }
 
   findByDid(org_did: string): Promise<Organization | null> {
     return this.prisma.organization.findUnique({ where: { org_did } });
   }
 
-  findByOrgId(orgId: string): Promise<Organization | null> {
-    return this.prisma.organization.findFirst({ where: { orgId: orgId } });
-  }
-
-  delete(org_id: number) {
+  delete(org_id: string) {
     return this.prisma.organization.delete({ where: { org_id } });
   }
 }

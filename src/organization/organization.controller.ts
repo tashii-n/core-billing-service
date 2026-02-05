@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   UseGuards,
@@ -47,10 +46,7 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateOrganizationDto,
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
     return this.service.update(id, dto);
   }
 
@@ -78,7 +74,7 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
@@ -92,7 +88,7 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  delete(@Param('id', ParseIntPipe) id: number) {
+  delete(@Param('id') id: string) {
     return this.service.delete(id);
   }
 }

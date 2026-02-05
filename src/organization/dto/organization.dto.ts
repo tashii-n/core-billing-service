@@ -16,11 +16,6 @@ export class CreateOrganizationDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  orgId: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
   client_id: string;
 
   @ApiProperty()
@@ -59,10 +54,5 @@ export class UpdateOrganizationDto {
   @IsOptional()
   @IsString()
   redirect_url?: string;
-
-  @ApiPropertyOptional({ enum: OrgType })
-  @IsOptional()
-  @IsEnum(OrgType)
-  org_type?: OrgType;
-  orgId: any;
+  org_type: any;
 }

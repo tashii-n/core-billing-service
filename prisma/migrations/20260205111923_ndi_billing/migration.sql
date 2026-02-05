@@ -21,8 +21,7 @@ CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 
 -- CreateTable
 CREATE TABLE "organizations" (
-    "org_id" SERIAL NOT NULL,
-    "orgId" TEXT NOT NULL,
+    "org_id" TEXT NOT NULL,
     "org_did" TEXT NOT NULL,
     "org_name" TEXT NOT NULL,
     "org_type" "OrgType" NOT NULL,
@@ -31,9 +30,7 @@ CREATE TABLE "organizations" (
     "redirect_url" TEXT NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "organizations_pkey" PRIMARY KEY ("org_id")
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -110,7 +107,7 @@ CREATE TABLE "plan_usage_rates" (
 -- CreateTable
 CREATE TABLE "subscriptions" (
     "subscription_id" SERIAL NOT NULL,
-    "org_id" INTEGER NOT NULL,
+    "org_id" TEXT NOT NULL,
     "service_id" INTEGER NOT NULL,
     "plan_id" INTEGER NOT NULL,
     "status" "SubscriptionStatus" NOT NULL,
@@ -129,7 +126,7 @@ CREATE TABLE "subscriptions" (
 CREATE TABLE "usage_events" (
     "usage_id" SERIAL NOT NULL,
     "occurred_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "org_id" INTEGER NOT NULL,
+    "org_id" TEXT NOT NULL,
     "service_id" INTEGER NOT NULL,
     "subscription_id" INTEGER NOT NULL,
     "plan_id" INTEGER NOT NULL,
@@ -144,7 +141,7 @@ CREATE TABLE "usage_events" (
 -- CreateTable
 CREATE TABLE "invoices" (
     "invoice_id" SERIAL NOT NULL,
-    "org_id" INTEGER NOT NULL,
+    "org_id" TEXT NOT NULL,
     "period_start" TIMESTAMP(3) NOT NULL,
     "period_end" TIMESTAMP(3) NOT NULL,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'DRAFT',
@@ -177,7 +174,7 @@ CREATE TABLE "invoice_lines" (
 CREATE TABLE "transactions" (
     "transaction_id" SERIAL NOT NULL,
     "invoice_id" INTEGER,
-    "org_id" INTEGER NOT NULL,
+    "org_id" TEXT NOT NULL,
     "amount" DECIMAL(12,2) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'BTN',
     "payment_status" "PaymentStatus" NOT NULL,
@@ -200,7 +197,7 @@ CREATE TABLE "usage_counters" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "organizations_orgId_key" ON "organizations"("orgId");
+CREATE UNIQUE INDEX "organizations_org_id_key" ON "organizations"("org_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");

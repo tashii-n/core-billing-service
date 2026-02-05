@@ -61,8 +61,7 @@ enum PaymentStatus {
  */
 
 model Organization {
-  org_id     Int   @id @default(autoincrement())
-  orgId      String   @unique
+  org_id      String   @unique
   org_did    String   @unique
   org_name   String @unique
   org_type   OrgType
@@ -192,7 +191,7 @@ model PlanUsageRate {
 model Subscription {
   subscription_id Int @id @default(autoincrement())
 
-  org_id     Int
+  org_id     String
   service_id Int
   plan_id    Int
 
@@ -225,7 +224,7 @@ model UsageEvent {
   usage_id    Int   @id @default(autoincrement())
   occurred_at DateTime @default(now())
 
-  org_id          Int
+  org_id          String
   service_id      Int
   subscription_id Int
   plan_id         Int
@@ -254,7 +253,7 @@ model UsageEvent {
 model Invoice {
   invoice_id Int @id @default(autoincrement())
 
-  org_id       Int
+  org_id       String
   period_start DateTime
   period_end   DateTime
 
@@ -301,7 +300,7 @@ model Transaction {
   transaction_id Int @id @default(autoincrement())
 
   invoice_id Int?
-  org_id     Int
+  org_id     String
 
   amount   Decimal @db.Decimal(12, 2)
   currency String  @default("BTN")
