@@ -32,10 +32,14 @@ export class SubscriptionsRepository {
   }
 
   update(subscription_id: number, data: any) {
+    const cleaned = Object.fromEntries(
+      Object.entries(data).filter(([, v]) => v !== undefined),
+    );
+
     return this.prisma.subscription.update({
       where: { subscription_id },
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      data,
+      data: cleaned,
     });
   }
 
