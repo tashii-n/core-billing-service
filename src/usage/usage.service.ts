@@ -105,6 +105,7 @@ export class UsageService {
         counted: dto.result === 'SUCCESS',
         subscription_id: sub.subscription_id,
         plan_id: sub.plan_id,
+        client_id: clientId,
       };
     });
   }
