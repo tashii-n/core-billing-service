@@ -27,6 +27,7 @@ enum PlanCode {
   PLUS
   PREMIUM
   ELITE
+  PAY_PER_USE
 }
 
 enum SubscriptionStatus {
@@ -62,8 +63,12 @@ enum PaymentStatus {
 model Organization {
   org_id     Int   @id @default(autoincrement())
   org_did    String   @unique
-  org_name   String
+  org_name   String @unique
   org_type   OrgType
+  client_id    String   @unique
+  role         String
+  redirect_url String
+  is_active    Boolean  @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -94,7 +99,7 @@ model Service {
 model Plan {
   plan_id        Int       @id @default(autoincrement())
   service_id     Int
-  plan_code      String // BASIC/PLUS/PREMIUM/PAYG
+  plan_code      PlanCode
   billing_period String // MONTHLY/YEARLY (or make enum later)
   billing_model  BillingModel
   is_active      Boolean      @default(true)
@@ -194,9 +199,6 @@ model Subscription {
 
   start_date DateTime  @default(now())
   end_date   DateTime?
-
-  current_period_start DateTime?
-  current_period_end   DateTime?
 
   cancel_at_period_end Boolean @default(false)
 

@@ -5,7 +5,7 @@ CREATE TYPE "OrgType" AS ENUM ('SMALL', 'MEDIUM', 'LARGE', 'OTHER');
 CREATE TYPE "BillingModel" AS ENUM ('SUBSCRIPTION', 'PAY_PER_USE');
 
 -- CreateEnum
-CREATE TYPE "PlanCode" AS ENUM ('BASIC', 'PLUS', 'PREMIUM', 'ELITE');
+CREATE TYPE "PlanCode" AS ENUM ('BASIC', 'PLUS', 'PREMIUM', 'ELITE', 'PAY_PER_USE');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'CANCELED', 'EXPIRED');
@@ -25,6 +25,10 @@ CREATE TABLE "organizations" (
     "org_did" TEXT NOT NULL,
     "org_name" TEXT NOT NULL,
     "org_type" "OrgType" NOT NULL,
+    "client_id" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "redirect_url" TEXT NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -46,7 +50,7 @@ CREATE TABLE "services" (
 CREATE TABLE "plans" (
     "plan_id" SERIAL NOT NULL,
     "service_id" INTEGER NOT NULL,
-    "plan_code" TEXT NOT NULL,
+    "plan_code" "PlanCode" NOT NULL,
     "billing_period" TEXT NOT NULL,
     "billing_model" "BillingModel" NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
@@ -110,8 +114,6 @@ CREATE TABLE "subscriptions" (
     "status" "SubscriptionStatus" NOT NULL,
     "start_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "end_date" TIMESTAMP(3),
-    "current_period_start" TIMESTAMP(3),
-    "current_period_end" TIMESTAMP(3),
     "cancel_at_period_end" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -184,6 +186,15 @@ CREATE TABLE "transactions" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "organizations_org_name_key" ON "organizations"("org_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "organizations_client_id_key" ON "organizations"("client_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "services_service_name_key" ON "services"("service_name");
 
 -- CreateIndex
 CREATE INDEX "plans_service_id_idx" ON "plans"("service_id");

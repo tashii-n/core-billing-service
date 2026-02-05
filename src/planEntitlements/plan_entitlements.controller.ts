@@ -46,6 +46,20 @@ export class PlanEntitlementsController {
     status: 401,
     description: 'Unauthorized.',
   })
+  findAll() {
+    return this.service.findAll();
+  }
+
+  @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiResponse({
+    status: 200,
+    description: 'plan entitlements record retrieved successfully.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }

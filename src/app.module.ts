@@ -13,6 +13,7 @@ import { PlanUsageRateModule } from './planUsageRate/plan_usage_rate.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsageModule } from './usage/usage.module';
 import { PrismaModule } from 'prisma/prisma.module';
+import { LoginAuthModule } from './login/login-auth.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PrismaModule } from 'prisma/prisma.module';
       validationSchema,
     }),
     AuthModule,
+    LoginAuthModule,
     OrganizationModule,
     ServicesModule,
     PlansModule,

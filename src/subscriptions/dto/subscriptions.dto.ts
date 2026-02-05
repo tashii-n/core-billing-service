@@ -56,14 +56,4 @@ export class UpdateSubscriptionDto {
   @IsOptional()
   @IsBoolean()
   cancel_at_period_end?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDateString()
-  current_period_start?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsDateString()
-  current_period_end?: string;
 }

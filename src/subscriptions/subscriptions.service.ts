@@ -40,12 +40,6 @@ export class SubscriptionsService {
       status: dto.status,
       end_date: dto.end_date ? new Date(dto.end_date) : undefined,
       cancel_at_period_end: dto.cancel_at_period_end,
-      current_period_start: dto.current_period_start
-        ? new Date(dto.current_period_start)
-        : undefined,
-      current_period_end: dto.current_period_end
-        ? new Date(dto.current_period_end)
-        : undefined,
     });
   }
 

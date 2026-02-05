@@ -19,6 +19,7 @@
     "postbuild": "node -e \"const fs = require('fs'); const path = require('path'); const dirs = ['dist/templates/pdf', 'dist/templates/email']; dirs.forEach(dir => { if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); } }); fs.copyFileSync('src/templates/pdf/template.html', 'dist/templates/pdf/template.html'); fs.copyFileSync('src/templates/email/template.html', 'dist/templates/email/template.html');\""
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.975.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -27,6 +28,7 @@
     "@nestjs/swagger": "^11.2.5",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "axios": "^1.13.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "joi": "^18.0.2",

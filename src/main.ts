@@ -8,6 +8,13 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Enable CORS
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   app.setGlobalPrefix('billing');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -36,5 +43,7 @@ async function bootstrap() {
   Logger.log(`🚀 Application is listening on: ${port}`);
 
   Logger.log('📘 Swagger UI path: /billing/swagger');
+
+  Logger.log('https://09fe-150-228-179-2.ngrok-free.app/billing/swagger');
 }
 bootstrap();

@@ -7,11 +7,27 @@ import { Organization, OrgType } from '@prisma/client';
 export class OrganizationRepository {
   constructor(private prisma: PrismaService) {}
 
-  create(data: { org_did: string; org_name: string; org_type: OrgType }) {
+  create(data: {
+    org_did: string;
+    client_id: string;
+    role: string;
+    redirect_url: string;
+    org_name: string;
+    org_type: OrgType;
+  }) {
     return this.prisma.organization.create({ data });
   }
 
-  update(org_id: number, data: { org_name?: string; org_type?: OrgType }) {
+  update(
+    org_id: number,
+    data: {
+      org_name?: string;
+      client_id: string;
+      role: string;
+      redirect_url: string;
+      org_type?: OrgType;
+    },
+  ) {
     return this.prisma.organization.update({
       where: { org_id },
       data,
