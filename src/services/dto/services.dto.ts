@@ -8,6 +8,11 @@ export class CreateServiceDto {
   @IsString()
   service_name: string;
 
+  @ApiProperty({ example: 'MV' })
+  @IsNotEmpty()
+  @IsString()
+  service_code: string;
+
   @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()
@@ -19,6 +24,11 @@ export class UpdateServiceDto {
   @IsOptional()
   @IsString()
   service_name?: string;
+
+  @ApiProperty({ example: 'MV' })
+  @IsNotEmpty()
+  @IsString()
+  service_code: string;
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()

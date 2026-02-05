@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { CreateUsageDto } from './dto/create-usage.dto';
 
 @Injectable()
@@ -21,7 +20,7 @@ export class UsageService {
       if (!org) throw new NotFoundException('ORG_NOT_FOUND');
 
       // 2) Resolve service by service_code
-      const service = await tx.service.findUnique({
+      const service = await tx.service.findFirst({
         where: { service_code: dto.serviceCode },
         select: { service_id: true },
       });
@@ -37,14 +36,14 @@ export class UsageService {
         select: {
           subscription_id: true,
           plan_id: true,
-          current_period_start: true,
-          current_period_end: true,
+          start_date: true,
+          end_date: true,
         },
       });
 
       if (!sub) throw new NotFoundException('NO_ACTIVE_SUBSCRIPTION');
 
-      if (!sub.current_period_start || !sub.current_period_end) {
+      if (!sub.start_date || !sub.end_date) {
         throw new BadRequestException('SUBSCRIPTION_MISSING_BILLING_PERIOD');
       }
 
@@ -61,6 +60,7 @@ export class UsageService {
           },
         });
       } catch (e: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (e.code === 'P2002') {
           return { status: 'DUPLICATE' };
         }
@@ -69,18 +69,19 @@ export class UsageService {
 
       // 5) Increment counter ONLY on SUCCESS
       if (dto.result === 'SUCCESS') {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         await tx.usageCounter.upsert({
           where: {
             subscription_id_period_start_period_end: {
               subscription_id: sub.subscription_id,
-              period_start: sub.current_period_start,
-              period_end: sub.current_period_end,
+              period_start: sub.start_date,
+              period_end: sub.end_date,
             },
           },
           create: {
             subscription_id: sub.subscription_id,
-            period_start: sub.current_period_start,
-            period_end: sub.current_period_end,
+            period_start: sub.start_date,
+            period_end: sub.end_date,
             count: 1,
           },
           update: {

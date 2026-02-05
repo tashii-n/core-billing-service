@@ -9,6 +9,7 @@ export class ServicesRepository {
 
   create(data: {
     service_name: string;
+    service_code: string;
     org_type_eligible?: boolean;
   }): Promise<Service> {
     return this.prisma.service.create({ data });
@@ -28,6 +29,7 @@ export class ServicesRepository {
     service_id: number,
     data: {
       service_name?: string;
+      service_code: string;
       org_type_eligible?: boolean;
     },
   ): Promise<Service> {

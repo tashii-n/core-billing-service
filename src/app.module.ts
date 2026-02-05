@@ -33,7 +33,7 @@ import { LoginAuthModule } from './login/login-auth.module';
     PlanUsageRateModule,
     PrismaModule,
     SubscriptionsModule,
-    UsageModule
+    UsageModule,
   ],
 })
 export class AppModule {}
