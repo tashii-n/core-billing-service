@@ -1,34 +1,30 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsInt, IsNotEmpty, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateUsageDto {
-  @ApiProperty({
-    example: "did:org:test-001",
-    description: "Organization DID",
-  })
+  @ApiProperty({ example: "did:org:test-001" })
   @IsString()
   @IsNotEmpty()
   orgDid!: string;
 
   @ApiProperty({
-    example: 1,
-    description: "Service ID",
+    example: "EKYC",
+    description: "Unique service code",
   })
-  @IsInt()
-  serviceId!: number;
+  @IsString()
+  @IsNotEmpty()
+  serviceCode!: string;
 
   @ApiProperty({
     example: "SUCCESS",
     enum: ["SUCCESS", "FAILED"],
-    description: "Result of the usage",
   })
-  @IsString()
   @IsIn(["SUCCESS", "FAILED"])
   result!: "SUCCESS" | "FAILED";
 
   @ApiProperty({
     example: "thread-abc-123",
-    description: "Unique thread ID for idempotency",
+    description: "Idempotency key",
   })
   @IsString()
   @IsNotEmpty()

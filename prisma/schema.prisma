@@ -78,6 +78,7 @@ model Organization {
 model Service {
   service_id               Int  @id @default(autoincrement())
   service_name             String
+  service_code             String @unique
   org_type_eligible Boolean @default(false)
 
   created_at DateTime @default(now())
