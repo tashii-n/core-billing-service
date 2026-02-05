@@ -1,5 +1,9 @@
 // organization.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { OrganizationRepository } from './organization.repository';
 import {
   CreateOrganizationDto,
@@ -11,12 +15,27 @@ export class OrganizationService {
   constructor(private readonly repository: OrganizationRepository) {}
 
   async create(dto: CreateOrganizationDto) {
-    const { org_did, org_name, org_type, client_id, role, redirect_url } = dto;
+    const {
+      org_did,
+      orgId,
+      org_name,
+      org_type,
+      client_id,
+      role,
+      redirect_url,
+    } = dto;
     if (!org_type) {
-      throw new Error('org_type is required');
+      throw new BadRequestException('org_type is required');
+    }
+    if (orgId) {
+      const existingOrg = await this.repository.findByOrgId(orgId);
+      if (existingOrg) {
+        throw new BadRequestException('orgId already exists');
+      }
     }
     return this.repository.create({
       org_did,
+      orgId,
       org_name,
       org_type,
       client_id,
@@ -32,6 +51,8 @@ export class OrganizationService {
     const updateData: any = {};
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (dto.org_name !== undefined) updateData.org_name = dto.org_name;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    if (dto.orgId !== undefined) updateData.orgId = dto.orgId;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (dto.org_type !== undefined) updateData.org_type = dto.org_type;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

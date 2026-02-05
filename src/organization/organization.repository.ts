@@ -9,6 +9,7 @@ export class OrganizationRepository {
 
   create(data: {
     org_did: string;
+    orgId: string;
     client_id: string;
     role: string;
     redirect_url: string;
@@ -26,6 +27,7 @@ export class OrganizationRepository {
       role: string;
       redirect_url: string;
       org_type?: OrgType;
+      orgId?: string;
     },
   ) {
     return this.prisma.organization.update({
@@ -44,6 +46,10 @@ export class OrganizationRepository {
 
   findByDid(org_did: string): Promise<Organization | null> {
     return this.prisma.organization.findUnique({ where: { org_did } });
+  }
+
+  findByOrgId(orgId: string): Promise<Organization | null> {
+    return this.prisma.organization.findFirst({ where: { orgId: orgId } });
   }
 
   delete(org_id: number) {

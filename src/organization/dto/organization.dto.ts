@@ -16,6 +16,11 @@ export class CreateOrganizationDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  orgId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
   client_id: string;
 
   @ApiProperty()
@@ -59,4 +64,5 @@ export class UpdateOrganizationDto {
   @IsOptional()
   @IsEnum(OrgType)
   org_type?: OrgType;
+  orgId: any;
 }
