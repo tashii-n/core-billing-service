@@ -8,7 +8,7 @@ CREATE TYPE "BillingModel" AS ENUM ('SUBSCRIPTION', 'PAY_PER_USE');
 CREATE TYPE "PlanCode" AS ENUM ('BASIC', 'PLUS', 'PREMIUM', 'ELITE', 'PAY_PER_USE');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'CANCELED', 'EXPIRED');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'CANCELED', 'EXPIRED', 'EXCEEDED_LIMIT');
 
 -- CreateEnum
 CREATE TYPE "UsageResult" AS ENUM ('SUCCESS', 'FAILED');
@@ -39,6 +39,7 @@ CREATE TABLE "organizations" (
 CREATE TABLE "services" (
     "service_id" SERIAL NOT NULL,
     "service_name" TEXT NOT NULL,
+    "service_code" TEXT NOT NULL,
     "org_type_eligible" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -184,6 +185,17 @@ CREATE TABLE "transactions" (
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("transaction_id")
 );
 
+-- CreateTable
+CREATE TABLE "usage_counters" (
+    "subscription_id" INTEGER NOT NULL,
+    "period_start" TIMESTAMP(3) NOT NULL,
+    "period_end" TIMESTAMP(3) NOT NULL,
+    "count" INTEGER NOT NULL DEFAULT 0,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "usage_counters_pkey" PRIMARY KEY ("subscription_id","period_start","period_end")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");
 
@@ -194,7 +206,7 @@ CREATE UNIQUE INDEX "organizations_org_name_key" ON "organizations"("org_name");
 CREATE UNIQUE INDEX "organizations_client_id_key" ON "organizations"("client_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "services_service_name_key" ON "services"("service_name");
+CREATE UNIQUE INDEX "services_service_code_key" ON "services"("service_code");
 
 -- CreateIndex
 CREATE INDEX "plans_service_id_idx" ON "plans"("service_id");
@@ -247,6 +259,9 @@ CREATE INDEX "transactions_org_id_transaction_date_idx" ON "transactions"("org_i
 -- CreateIndex
 CREATE INDEX "transactions_invoice_id_idx" ON "transactions"("invoice_id");
 
+-- CreateIndex
+CREATE INDEX "usage_counters_subscription_id_period_start_period_end_idx" ON "usage_counters"("subscription_id", "period_start", "period_end");
+
 -- AddForeignKey
 ALTER TABLE "plans" ADD CONSTRAINT "plans_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("service_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -291,3 +306,6 @@ ALTER TABLE "transactions" ADD CONSTRAINT "transactions_invoice_id_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_org_id_fkey" FOREIGN KEY ("org_id") REFERENCES "organizations"("org_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "usage_counters" ADD CONSTRAINT "usage_counters_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("subscription_id") ON DELETE RESTRICT ON UPDATE CASCADE;
