@@ -3,15 +3,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OrgType } from '@prisma/client';
 
 export class CreateOrganizationDto {
-  @ApiProperty({
-    description:
-      'Business / external org identifier (string). This is your second org id (orgId).',
-    example: 'ORG-0001',
-  })
-  @IsNotEmpty()
-  @IsString()
-  orgId: string;
-
   @ApiProperty({ example: 'did:example:123' })
   @IsNotEmpty()
   @IsString()
@@ -32,7 +23,7 @@ export class CreateOrganizationDto {
   @IsString()
   role: string;
 
-  @ApiProperty({ example: 'https://client.example.com/callback' })
+  @ApiProperty({ example: '/superadmin' })
   @IsNotEmpty()
   @IsString()
   redirect_url: string;
@@ -44,14 +35,6 @@ export class CreateOrganizationDto {
 }
 
 export class UpdateOrganizationDto {
-  @ApiPropertyOptional({
-    description: 'Business / external org identifier (string).',
-    example: 'ORG-0001',
-  })
-  @IsOptional()
-  @IsString()
-  orgId?: string;
-
   @ApiPropertyOptional({ example: 'did:example:123' })
   @IsOptional()
   @IsString()

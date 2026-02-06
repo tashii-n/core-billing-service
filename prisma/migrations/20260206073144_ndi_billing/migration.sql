@@ -22,7 +22,6 @@ CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 -- CreateTable
 CREATE TABLE "organizations" (
     "org_id" SERIAL NOT NULL,
-    "orgId" TEXT NOT NULL,
     "org_did" TEXT NOT NULL,
     "org_name" TEXT NOT NULL,
     "org_type" "OrgType" NOT NULL,
@@ -196,9 +195,6 @@ CREATE TABLE "usage_counters" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "organizations_orgId_key" ON "organizations"("orgId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");
 
 -- CreateIndex
@@ -238,13 +234,13 @@ CREATE INDEX "subscriptions_org_id_service_id_status_idx" ON "subscriptions"("or
 CREATE INDEX "subscriptions_plan_id_idx" ON "subscriptions"("plan_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "usage_events_external_ref_key" ON "usage_events"("external_ref");
-
--- CreateIndex
 CREATE INDEX "usage_events_subscription_id_occurred_at_idx" ON "usage_events"("subscription_id", "occurred_at");
 
 -- CreateIndex
 CREATE INDEX "usage_events_org_id_service_id_occurred_at_idx" ON "usage_events"("org_id", "service_id", "occurred_at");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "usage_events_subscription_id_external_ref_key" ON "usage_events"("subscription_id", "external_ref");
 
 -- CreateIndex
 CREATE INDEX "invoices_org_id_status_idx" ON "invoices"("org_id", "status");

@@ -62,7 +62,7 @@ enum PaymentStatus {
 
 model Organization {
   org_id     Int   @id @default(autoincrement())
-  orgId      String   @unique
+  
   org_did    String   @unique
   org_name   String @unique
   org_type   OrgType

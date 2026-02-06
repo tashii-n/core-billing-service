@@ -14,21 +14,11 @@ export class OrganizationService {
   constructor(private readonly repository: OrganizationRepository) {}
 
   async create(dto: CreateOrganizationDto) {
-    const {
-      orgId,
-      org_did,
-      org_name,
-      org_type,
-      client_id,
-      role,
-      redirect_url,
-    } = dto;
+    const { org_did, org_name, org_type, client_id, role, redirect_url } = dto;
 
-    if (!orgId) throw new BadRequestException('orgId is required');
     if (!org_type) throw new BadRequestException('org_type is required');
 
     return this.repository.create({
-      orgId,
       org_did,
       org_name,
       org_type,
@@ -43,7 +33,6 @@ export class OrganizationService {
     if (!org) throw new NotFoundException('Organization not found');
 
     return this.repository.update(org_id, {
-      orgId: dto.orgId,
       org_did: dto.org_did,
       org_name: dto.org_name,
       org_type: dto.org_type,
