@@ -234,7 +234,7 @@ model UsageEvent {
 
   result UsageResult
 
-  external_ref String @unique // idempotency
+  external_ref String // idempotency
   metadata     Json?
 
   created_at DateTime @default(now())
@@ -244,6 +244,7 @@ model UsageEvent {
   subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
   plan         Plan         @relation(fields: [plan_id], references: [plan_id])
 
+  @@unique([subscription_id, external_ref])  // ✅ org-specific idempotency
   @@index([subscription_id, occurred_at])
   @@index([org_id, service_id, occurred_at])
   @@map("usage_events")
