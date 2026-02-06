@@ -1,3 +1,4 @@
+// src/usage/usage.controller.ts
 import {
   Body,
   Controller,
@@ -7,126 +8,144 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { UsageService } from './usage.service';
 import { CreateUsageDto } from './dto/create-usage.dto';
 
-@ApiTags('Usage')
+@ApiTags('USAGE')
 @ApiBearerAuth()
 @Controller('usage')
 export class UsageController {
   constructor(private readonly usageService: UsageService) {}
 
+  /**
+   * POST /usage
+   * Records a usage event + increments UsageCounter for SUCCESS only.
+   * Org is resolved by:
+   * - normal caller: JWT client_id -> Organization.client_id
+   * - CORE caller (client_id == CORE_CLIENT_ID): dto.orgDid -> Organization.org_did
+   */
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({
-    summary: 'Record a usage event (authenticated org only)',
-  })
   @ApiBody({
-    type: CreateUsageDto,
+    description: 'Usage event payload',
     examples: {
-      success: {
-        summary: 'SUCCESS usage',
+      normalClient: {
+        summary: 'Normal client usage (non-core)',
         value: {
           serviceCode: 'EKYC',
+          threadId: 'req-123456',
           result: 'SUCCESS',
-          threadId: 'thread-1001',
+          metadata: {
+            documentType: 'PASSPORT',
+            country: 'BT',
+          },
         },
       },
-      failure: {
-        summary: 'FAILED usage',
+      coreClient: {
+        summary: 'CORE client usage (acting on behalf of an org)',
         value: {
           serviceCode: 'EKYC',
-          result: 'FAILED',
-          threadId: 'thread-1002',
+          threadId: 'req-789012',
+          result: 'SUCCESS',
+          orgDid: 'did:example:org123',
+          metadata: {
+            flow: 'bulk-verification',
+          },
         },
       },
     },
   })
-  @ApiResponse({
-    status: 201,
-    description: 'Recorded',
-    schema: {
-      example: {
-        status: 'RECORDED',
-        counted: true,
-        subscription_id: 10,
-        plan_id: 2,
-      },
-    },
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Duplicate (same threadId already recorded)',
-    schema: { example: { status: 'DUPLICATE' } },
-  })
-  async create(@Body() dto: CreateUsageDto, @Req() req: any) {
-    const clientId = req.user?.client_id;
+  @ApiResponse({ status: 201, description: 'Usage recorded.' })
+  @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  create(@Body() dto: CreateUsageDto, @Req() req: any) {
+    const clientId =
+      req.user?.client_id ?? req.user?.aud ?? req.user?.azp ?? undefined;
+
     return this.usageService.createUsage(dto, clientId);
   }
 
+  /**
+   * GET /usage/check?serviceCode=EKYC[&orgDid=did:...]
+   * Checks if org has ACTIVE subscription, within term, and for prepaid: quota not exceeded.
+   * PAY_PER_USE: no quota check.
+   */
   @Get('check')
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({
-    summary: 'Check if org can use a service now',
-    description:
-      'Validates ACTIVE subscription and term dates. Enforces hard quota only for prepaid plans. PAY_PER_USE has no quota.',
+  @ApiQuery({
+    name: 'serviceCode',
+    required: true,
+    description: 'Service code to check access for',
+    example: 'EKYC',
   })
-  @ApiQuery({ name: 'serviceCode', required: true, example: 'EKYC' })
+  @ApiQuery({
+    name: 'orgDid',
+    required: false,
+    description:
+      'Only for CORE caller (client_id == CORE_CLIENT_ID). If provided, checks access for that org DID.',
+    example: 'did:example:org123',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Eligibility result',
-    schema: {
-      examples: {
-        prepaidOk: {
-          summary: 'Prepaid allowed',
-          value: {
-            eligible: true,
-            reason: 'OK',
-            billing_model: 'SUBSCRIPTION',
-            subscription_id: 10,
-            plan_id: 2,
-            used: 4,
-            limit: 100,
-            remaining: 96,
+    description: 'Access check result.',
+    content: {
+      'application/json': {
+        examples: {
+          prepaidOk: {
+            summary: 'Prepaid subscription – access allowed',
+            value: {
+              eligible: true,
+              reason: 'OK',
+              used: 120,
+              limit: 1000,
+              remaining: 880,
+            },
           },
-        },
-        paygOk: {
-          summary: 'PAY_PER_USE allowed',
-          value: {
-            eligible: true,
-            reason: 'OK',
-            billing_model: 'PAY_PER_USE',
-            subscription_id: 11,
-            plan_id: 5,
+          quotaExceeded: {
+            summary: 'Prepaid subscription – quota exceeded',
+            value: {
+              eligible: false,
+              reason: 'QUOTA_EXCEEDED',
+              used: 1000,
+              limit: 1000,
+              remaining: 0,
+            },
           },
-        },
-        exceeded: {
-          summary: 'Prepaid quota exceeded',
-          value: {
-            eligible: false,
-            reason: 'QUOTA_EXCEEDED',
-            billing_model: 'SUBSCRIPTION',
-            subscription_id: 10,
-            plan_id: 2,
-            used: 100,
-            limit: 100,
-            remaining: 0,
+          payPerUse: {
+            summary: 'Pay-per-use subscription',
+            value: {
+              eligible: true,
+              reason: 'OK',
+              billing_model: 'PAY_PER_USE',
+            },
+          },
+          noSubscription: {
+            summary: 'No active subscription',
+            value: {
+              eligible: false,
+              reason: 'NO_ACTIVE_SUBSCRIPTION',
+            },
           },
         },
       },
     },
   })
-  async check(@Query('serviceCode') serviceCode: string, @Req() req: any) {
-    const clientId = req.user?.client_id;
-    return this.usageService.checkAccess(serviceCode, clientId);
+  check(
+    @Query('serviceCode') serviceCode: string,
+    @Query('orgDid') orgDid: string | undefined,
+    @Req() req: any,
+  ) {
+    const clientId =
+      req.user?.client_id ?? req.user?.aud ?? req.user?.azp ?? undefined;
+
+    return this.usageService.checkAccess(serviceCode, clientId, orgDid);
   }
 }

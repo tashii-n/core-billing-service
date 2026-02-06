@@ -17,6 +17,11 @@ enum OrgType {
   OTHER
 }
 
+enum PricingSource {
+  TEMPLATE
+  NEGOTIATED
+}
+
 enum BillingModel {
   SUBSCRIPTION
   PAY_PER_USE
@@ -61,17 +66,17 @@ enum PaymentStatus {
  */
 
 model Organization {
-  org_id     Int   @id @default(autoincrement())
-  
-  org_did    String   @unique
-  org_name   String @unique
-  org_type   OrgType
+  org_id Int @id @default(autoincrement())
+
+  org_did      String   @unique
+  org_name     String   @unique
+  org_type     OrgType
   client_id    String   @unique
   role         String
   redirect_url String
   is_active    Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   subscriptions Subscription[]
   invoices      Invoice[]
@@ -82,9 +87,9 @@ model Organization {
 }
 
 model Service {
-  service_id               Int  @id @default(autoincrement())
-  service_name             String
-  service_code             String @unique
+  service_id        Int     @id @default(autoincrement())
+  service_name      String
+  service_code      String  @unique
   org_type_eligible Boolean @default(false)
 
   created_at DateTime @default(now())
@@ -98,7 +103,7 @@ model Service {
 }
 
 model Plan {
-  plan_id        Int       @id @default(autoincrement())
+  plan_id        Int          @id @default(autoincrement())
   service_id     Int
   plan_code      PlanCode
   billing_period String // MONTHLY/YEARLY (subscription lifetime)
@@ -126,7 +131,7 @@ model Plan {
  */
 
 model PlanPrice {
-  plan_price_id Int   @id @default(autoincrement())
+  plan_price_id Int      @id @default(autoincrement())
   plan_id       Int
   org_type      OrgType? // NULL = default rate
   currency      String   @default("BTN")
@@ -138,7 +143,8 @@ model PlanPrice {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  plan Plan @relation(fields: [plan_id], references: [plan_id])
+  plan          Plan                      @relation(fields: [plan_id], references: [plan_id])
+  prepaid_terms SubscriptionPrepaidTerm[] @relation("PrepaidTermPlanPrice")
 
   @@index([plan_id])
   @@index([plan_id, org_type])
@@ -146,7 +152,7 @@ model PlanPrice {
 }
 
 model PlanEntitlement {
-  entitlement_id Int   @id @default(autoincrement())
+  entitlement_id Int      @id @default(autoincrement())
   plan_id        Int
   org_type       OrgType? // NULL = default
 
@@ -154,10 +160,10 @@ model PlanEntitlement {
   overage_unit_price Decimal? @db.Decimal(12, 4)
 
   // Since you said prepaid plans are always hard limit, you can default true.
-  hard_limit         Boolean  @default(true)
+  hard_limit Boolean @default(true)
 
   // If quota is lifetime-based now, this can be 'LIFETIME' (or remove later)
-  period             String // e.g. LIFETIME
+  period String // e.g. LIFETIME
 
   effective_from DateTime
   effective_to   DateTime?
@@ -165,7 +171,8 @@ model PlanEntitlement {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  plan Plan @relation(fields: [plan_id], references: [plan_id])
+  plan          Plan                      @relation(fields: [plan_id], references: [plan_id])
+  prepaid_terms SubscriptionPrepaidTerm[] @relation("PrepaidTermEntitlement")
 
   @@index([plan_id])
   @@index([plan_id, org_type])
@@ -173,9 +180,9 @@ model PlanEntitlement {
 }
 
 model PlanUsageRate {
-  rate_id    Int   @id @default(autoincrement())
+  rate_id    Int     @id @default(autoincrement())
   plan_id    Int
-  unit_price Decimal  @db.Decimal(12, 4)
+  unit_price Decimal @db.Decimal(12, 4)
 
   effective_from DateTime
   effective_to   DateTime?
@@ -215,8 +222,9 @@ model Subscription {
   service      Service      @relation(fields: [service_id], references: [service_id])
   plan         Plan         @relation(fields: [plan_id], references: [plan_id])
 
-  usage_events  UsageEvent[]
-  usage_counter UsageCounter?   // one-to-one lifetime counter
+  usage_events              UsageEvent[]
+  usage_counter             UsageCounter? // one-to-one lifetime counter
+  subscription_prepaid_term SubscriptionPrepaidTerm?
 
   @@index([org_id, service_id, status])
   @@index([plan_id])
@@ -224,7 +232,7 @@ model Subscription {
 }
 
 model UsageEvent {
-  usage_id    Int   @id @default(autoincrement())
+  usage_id    Int      @id @default(autoincrement())
   occurred_at DateTime @default(now())
 
   org_id          Int
@@ -244,7 +252,7 @@ model UsageEvent {
   subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
   plan         Plan         @relation(fields: [plan_id], references: [plan_id])
 
-  @@unique([subscription_id, external_ref])  // ✅ org-specific idempotency
+  @@unique([subscription_id, external_ref]) // ✅ sub-specific idempotency
   @@index([subscription_id, occurred_at])
   @@index([org_id, service_id, occurred_at])
   @@map("usage_events")
@@ -281,6 +289,37 @@ model Invoice {
   @@unique([org_id, period_start, period_end])
   @@index([org_id, status])
   @@map("invoices")
+}
+
+/**
+ * One row per prepaid subscription to freeze negotiated terms.
+ * Postpaid plans (PAY_PER_USE) do not use this table.
+ */
+model SubscriptionPrepaidTerm {
+  subscription_id Int @id
+
+  pricing_source PricingSource
+
+  currency           String   @default("BTN")
+  fixed_fee          Decimal  @db.Decimal(12, 2)
+  included_quantity  Int
+  hard_limit         Boolean  @default(true)
+  overage_unit_price Decimal? @db.Decimal(12, 4)
+
+  source_plan_price_id       Int?
+  source_plan_entitlement_id Int?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subscription Subscription @relation(fields: [subscription_id], references: [subscription_id])
+
+  source_plan_price  PlanPrice?       @relation("PrepaidTermPlanPrice", fields: [source_plan_price_id], references: [plan_price_id])
+  source_entitlement PlanEntitlement? @relation("PrepaidTermEntitlement", fields: [source_plan_entitlement_id], references: [entitlement_id])
+
+  @@index([source_plan_price_id])
+  @@index([source_plan_entitlement_id])
+  @@map("subscription_prepaid_terms")
 }
 
 model InvoiceLine {

@@ -2,6 +2,9 @@
 CREATE TYPE "OrgType" AS ENUM ('SMALL', 'MEDIUM', 'LARGE', 'OTHER');
 
 -- CreateEnum
+CREATE TYPE "PricingSource" AS ENUM ('TEMPLATE', 'NEGOTIATED');
+
+-- CreateEnum
 CREATE TYPE "BillingModel" AS ENUM ('SUBSCRIPTION', 'PAY_PER_USE');
 
 -- CreateEnum
@@ -158,6 +161,23 @@ CREATE TABLE "invoices" (
 );
 
 -- CreateTable
+CREATE TABLE "subscription_prepaid_terms" (
+    "subscription_id" INTEGER NOT NULL,
+    "pricing_source" "PricingSource" NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'BTN',
+    "fixed_fee" DECIMAL(12,2) NOT NULL,
+    "included_quantity" INTEGER NOT NULL,
+    "hard_limit" BOOLEAN NOT NULL DEFAULT true,
+    "overage_unit_price" DECIMAL(12,4),
+    "source_plan_price_id" INTEGER,
+    "source_plan_entitlement_id" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "subscription_prepaid_terms_pkey" PRIMARY KEY ("subscription_id")
+);
+
+-- CreateTable
 CREATE TABLE "invoice_lines" (
     "line_id" SERIAL NOT NULL,
     "invoice_id" INTEGER NOT NULL,
@@ -249,6 +269,12 @@ CREATE INDEX "invoices_org_id_status_idx" ON "invoices"("org_id", "status");
 CREATE UNIQUE INDEX "invoices_org_id_period_start_period_end_key" ON "invoices"("org_id", "period_start", "period_end");
 
 -- CreateIndex
+CREATE INDEX "subscription_prepaid_terms_source_plan_price_id_idx" ON "subscription_prepaid_terms"("source_plan_price_id");
+
+-- CreateIndex
+CREATE INDEX "subscription_prepaid_terms_source_plan_entitlement_id_idx" ON "subscription_prepaid_terms"("source_plan_entitlement_id");
+
+-- CreateIndex
 CREATE INDEX "invoice_lines_invoice_id_idx" ON "invoice_lines"("invoice_id");
 
 -- CreateIndex
@@ -292,6 +318,15 @@ ALTER TABLE "usage_events" ADD CONSTRAINT "usage_events_plan_id_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "invoices" ADD CONSTRAINT "invoices_org_id_fkey" FOREIGN KEY ("org_id") REFERENCES "organizations"("org_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "subscription_prepaid_terms" ADD CONSTRAINT "subscription_prepaid_terms_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("subscription_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "subscription_prepaid_terms" ADD CONSTRAINT "subscription_prepaid_terms_source_plan_price_id_fkey" FOREIGN KEY ("source_plan_price_id") REFERENCES "plan_prices"("plan_price_id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "subscription_prepaid_terms" ADD CONSTRAINT "subscription_prepaid_terms_source_plan_entitlement_id_fkey" FOREIGN KEY ("source_plan_entitlement_id") REFERENCES "plan_entitlements"("entitlement_id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "invoice_lines" ADD CONSTRAINT "invoice_lines_invoice_id_fkey" FOREIGN KEY ("invoice_id") REFERENCES "invoices"("invoice_id") ON DELETE RESTRICT ON UPDATE CASCADE;

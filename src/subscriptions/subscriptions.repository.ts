@@ -6,8 +6,15 @@ export class SubscriptionsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(data: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    return this.prisma.subscription.create({ data });
+    return this.prisma.subscription.create({
+      data,
+      include: {
+        organization: true,
+        service: true,
+        plan: true,
+        subscription_prepaid_term: true,
+      },
+    });
   }
 
   findAll() {
@@ -16,6 +23,7 @@ export class SubscriptionsRepository {
         organization: true,
         service: true,
         plan: true,
+        subscription_prepaid_term: true,
       },
     });
   }
@@ -27,6 +35,7 @@ export class SubscriptionsRepository {
         organization: true,
         service: true,
         plan: true,
+        subscription_prepaid_term: true,
       },
     });
   }
@@ -38,8 +47,13 @@ export class SubscriptionsRepository {
 
     return this.prisma.subscription.update({
       where: { subscription_id },
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: cleaned,
+      include: {
+        organization: true,
+        service: true,
+        plan: true,
+        subscription_prepaid_term: true,
+      },
     });
   }
 
