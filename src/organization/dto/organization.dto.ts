@@ -3,56 +3,86 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OrgType } from '@prisma/client';
 
 export class CreateOrganizationDto {
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'Business / external org identifier (string). This is your second org id (orgId).',
+    example: 'ORG-0001',
+  })
+  @IsNotEmpty()
+  @IsString()
+  orgId: string;
+
+  @ApiProperty({ example: 'did:example:123' })
   @IsNotEmpty()
   @IsString()
   org_did: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Acme Corp' })
   @IsNotEmpty()
   @IsString()
   org_name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'cognito-client-id-xyz' })
   @IsNotEmpty()
   @IsString()
   client_id: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'CLIENT' })
   @IsNotEmpty()
   @IsString()
   role: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'https://client.example.com/callback' })
   @IsNotEmpty()
   @IsString()
   redirect_url: string;
 
-  @ApiPropertyOptional({ enum: OrgType })
-  @IsOptional()
+  @ApiProperty({ enum: OrgType, example: OrgType.SMALL })
+  @IsNotEmpty()
   @IsEnum(OrgType)
-  org_type?: OrgType;
+  org_type: OrgType;
 }
 
 export class UpdateOrganizationDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Business / external org identifier (string).',
+    example: 'ORG-0001',
+  })
+  @IsOptional()
+  @IsString()
+  orgId?: string;
+
+  @ApiPropertyOptional({ example: 'did:example:123' })
+  @IsOptional()
+  @IsString()
+  org_did?: string;
+
+  @ApiPropertyOptional({ example: 'Acme Corp' })
   @IsOptional()
   @IsString()
   org_name?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'cognito-client-id-xyz' })
   @IsOptional()
   @IsString()
   client_id?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'CLIENT' })
   @IsOptional()
   @IsString()
   role?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'https://client.example.com/callback' })
   @IsOptional()
   @IsString()
   redirect_url?: string;
-  org_type: any;
+
+  @ApiPropertyOptional({ enum: OrgType, example: OrgType.MEDIUM })
+  @IsOptional()
+  @IsEnum(OrgType)
+  org_type?: OrgType;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  is_active?: boolean;
 }

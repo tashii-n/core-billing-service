@@ -4,11 +4,12 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { OrganizationService } from './organization.service';
 import {
   CreateOrganizationDto,
@@ -38,6 +39,7 @@ export class OrganizationController {
 
   @Put(':id')
   @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Organization primary key (org_id)', example: 1 })
   @ApiResponse({
     status: 200,
     description: 'update organization record created successfully.',
@@ -46,7 +48,10 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateOrganizationDto,
+  ) {
     return this.service.update(id, dto);
   }
 
@@ -66,6 +71,7 @@ export class OrganizationController {
 
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Organization primary key (org_id)', example: 1 })
   @ApiResponse({
     status: 200,
     description: 'organization record retrieved successfully.',
@@ -74,12 +80,13 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Organization primary key (org_id)', example: 1 })
   @ApiResponse({
     status: 200,
     description: 'organization record delete successfully.',
@@ -88,7 +95,7 @@ export class OrganizationController {
     status: 401,
     description: 'Unauthorized.',
   })
-  delete(@Param('id') id: string) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return this.service.delete(id);
   }
 }
