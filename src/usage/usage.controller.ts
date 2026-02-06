@@ -1,20 +1,20 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
-  Body,
+  Query,
   Req,
   UseGuards,
-  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiQuery,
   ApiResponse,
   ApiTags,
-  ApiBody,
 } from '@nestjs/swagger';
 import { UsageService } from './usage.service';
 import { CreateUsageDto } from './dto/create-usage.dto';
@@ -28,47 +28,44 @@ export class UsageController {
   @Post()
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
-    summary: 'Record usage for the authenticated organization',
-    description:
-      'Adds a usage event and increments usage counter (SUCCESS only). ' +
-      'Organization is resolved from the access token client_id.',
+    summary: 'Record a usage event (authenticated org only)',
   })
   @ApiBody({
     type: CreateUsageDto,
     examples: {
-      successUsage: {
-        summary: 'Successful usage',
+      success: {
+        summary: 'SUCCESS usage',
         value: {
           serviceCode: 'EKYC',
           result: 'SUCCESS',
-          threadId: 'thread-12345',
+          threadId: 'thread-1001',
         },
       },
-      failedUsage: {
-        summary: 'Failed usage',
+      failure: {
+        summary: 'FAILED usage',
         value: {
           serviceCode: 'EKYC',
           result: 'FAILED',
-          threadId: 'thread-12346',
+          threadId: 'thread-1002',
         },
       },
     },
   })
   @ApiResponse({
     status: 201,
-    description: 'Usage recorded successfully',
+    description: 'Recorded',
     schema: {
       example: {
         status: 'RECORDED',
         counted: true,
-        subscription_id: 42,
-        plan_id: 3,
+        subscription_id: 10,
+        plan_id: 2,
       },
     },
   })
   @ApiResponse({
     status: 200,
-    description: 'Duplicate usage (same threadId already recorded)',
+    description: 'Duplicate (same threadId already recorded)',
     schema: { example: { status: 'DUPLICATE' } },
   })
   async create(@Body() dto: CreateUsageDto, @Req() req: any) {
@@ -79,11 +76,9 @@ export class UsageController {
   @Get('check')
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
-    summary: 'Check if the authenticated org can use a service now',
+    summary: 'Check if org can use a service now',
     description:
-      'Validates ACTIVE subscription + billing period window. ' +
-      'Quota is enforced only for prepaid (billing_model=SUBSCRIPTION). ' +
-      'PAY_PER_USE has no quota checks.',
+      'Validates ACTIVE subscription and term dates. Enforces hard quota only for prepaid plans. PAY_PER_USE has no quota.',
   })
   @ApiQuery({ name: 'serviceCode', required: true, example: 'EKYC' })
   @ApiResponse({
@@ -92,50 +87,39 @@ export class UsageController {
     schema: {
       examples: {
         prepaidOk: {
-          summary: 'Prepaid allowed (within quota)',
+          summary: 'Prepaid allowed',
           value: {
             eligible: true,
             reason: 'OK',
             billing_model: 'SUBSCRIPTION',
-            subscription_id: 55,
+            subscription_id: 10,
             plan_id: 2,
-            periodStart: '2026-02-01T00:00:00.000Z',
-            periodEnd: '2027-02-01T00:00:00.000Z',
-            used: 12,
+            used: 4,
             limit: 100,
-            remaining: 88,
-          },
-        },
-        prepaidExceeded: {
-          summary: 'Prepaid blocked (quota exceeded)',
-          value: {
-            eligible: false,
-            reason: 'QUOTA_EXCEEDED',
-            billing_model: 'SUBSCRIPTION',
-            subscription_id: 55,
-            plan_id: 2,
-            used: 100,
-            limit: 100,
-            remaining: 0,
+            remaining: 96,
           },
         },
         paygOk: {
-          summary: 'Pay-per-use allowed (no quotas)',
+          summary: 'PAY_PER_USE allowed',
           value: {
             eligible: true,
             reason: 'OK',
             billing_model: 'PAY_PER_USE',
-            subscription_id: 77,
-            plan_id: 9,
-            periodStart: '2026-02-01T00:00:00.000Z',
-            periodEnd: '2027-02-01T00:00:00.000Z',
+            subscription_id: 11,
+            plan_id: 5,
           },
         },
-        noSub: {
-          summary: 'No active subscription',
+        exceeded: {
+          summary: 'Prepaid quota exceeded',
           value: {
             eligible: false,
-            reason: 'NO_ACTIVE_SUBSCRIPTION',
+            reason: 'QUOTA_EXCEEDED',
+            billing_model: 'SUBSCRIPTION',
+            subscription_id: 10,
+            plan_id: 2,
+            used: 100,
+            limit: 100,
+            remaining: 0,
           },
         },
       },

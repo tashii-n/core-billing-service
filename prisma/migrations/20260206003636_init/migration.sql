@@ -21,7 +21,8 @@ CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
 
 -- CreateTable
 CREATE TABLE "organizations" (
-    "org_id" TEXT NOT NULL,
+    "org_id" SERIAL NOT NULL,
+    "orgId" TEXT NOT NULL,
     "org_did" TEXT NOT NULL,
     "org_name" TEXT NOT NULL,
     "org_type" "OrgType" NOT NULL,
@@ -30,7 +31,9 @@ CREATE TABLE "organizations" (
     "redirect_url" TEXT NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "organizations_pkey" PRIMARY KEY ("org_id")
 );
 
 -- CreateTable
@@ -81,7 +84,7 @@ CREATE TABLE "plan_entitlements" (
     "org_type" "OrgType",
     "included_quantity" INTEGER NOT NULL,
     "overage_unit_price" DECIMAL(12,4),
-    "hard_limit" BOOLEAN NOT NULL DEFAULT false,
+    "hard_limit" BOOLEAN NOT NULL DEFAULT true,
     "period" TEXT NOT NULL,
     "effective_from" TIMESTAMP(3) NOT NULL,
     "effective_to" TIMESTAMP(3),
@@ -107,14 +110,12 @@ CREATE TABLE "plan_usage_rates" (
 -- CreateTable
 CREATE TABLE "subscriptions" (
     "subscription_id" SERIAL NOT NULL,
-    "org_id" TEXT NOT NULL,
+    "org_id" INTEGER NOT NULL,
     "service_id" INTEGER NOT NULL,
     "plan_id" INTEGER NOT NULL,
     "status" "SubscriptionStatus" NOT NULL,
     "start_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "end_date" TIMESTAMP(3),
-    "current_period_start" TIMESTAMP(3),
-    "current_period_end" TIMESTAMP(3),
     "cancel_at_period_end" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -126,7 +127,7 @@ CREATE TABLE "subscriptions" (
 CREATE TABLE "usage_events" (
     "usage_id" SERIAL NOT NULL,
     "occurred_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "org_id" TEXT NOT NULL,
+    "org_id" INTEGER NOT NULL,
     "service_id" INTEGER NOT NULL,
     "subscription_id" INTEGER NOT NULL,
     "plan_id" INTEGER NOT NULL,
@@ -141,7 +142,7 @@ CREATE TABLE "usage_events" (
 -- CreateTable
 CREATE TABLE "invoices" (
     "invoice_id" SERIAL NOT NULL,
-    "org_id" TEXT NOT NULL,
+    "org_id" INTEGER NOT NULL,
     "period_start" TIMESTAMP(3) NOT NULL,
     "period_end" TIMESTAMP(3) NOT NULL,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'DRAFT',
@@ -174,7 +175,7 @@ CREATE TABLE "invoice_lines" (
 CREATE TABLE "transactions" (
     "transaction_id" SERIAL NOT NULL,
     "invoice_id" INTEGER,
-    "org_id" TEXT NOT NULL,
+    "org_id" INTEGER NOT NULL,
     "amount" DECIMAL(12,2) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'BTN',
     "payment_status" "PaymentStatus" NOT NULL,
@@ -188,16 +189,14 @@ CREATE TABLE "transactions" (
 -- CreateTable
 CREATE TABLE "usage_counters" (
     "subscription_id" INTEGER NOT NULL,
-    "period_start" TIMESTAMP(3) NOT NULL,
-    "period_end" TIMESTAMP(3) NOT NULL,
     "count" INTEGER NOT NULL DEFAULT 0,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "usage_counters_pkey" PRIMARY KEY ("subscription_id","period_start","period_end")
+    CONSTRAINT "usage_counters_pkey" PRIMARY KEY ("subscription_id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "organizations_org_id_key" ON "organizations"("org_id");
+CREATE UNIQUE INDEX "organizations_orgId_key" ON "organizations"("orgId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_org_did_key" ON "organizations"("org_did");
@@ -261,9 +260,6 @@ CREATE INDEX "transactions_org_id_transaction_date_idx" ON "transactions"("org_i
 
 -- CreateIndex
 CREATE INDEX "transactions_invoice_id_idx" ON "transactions"("invoice_id");
-
--- CreateIndex
-CREATE INDEX "usage_counters_subscription_id_period_start_period_end_idx" ON "usage_counters"("subscription_id", "period_start", "period_end");
 
 -- AddForeignKey
 ALTER TABLE "plans" ADD CONSTRAINT "plans_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("service_id") ON DELETE RESTRICT ON UPDATE CASCADE;
